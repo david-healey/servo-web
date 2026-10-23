@@ -98,9 +98,6 @@ Buttons briefly disable after a press to avoid double commands.
 
 ## Challenges and what I learned
 
-- **Reading a hardware datasheet:** getting the PCA9685 to work meant
-  understanding its sleep/restart sequence and why the prescale register can
-  only be written while the chip is asleep.
 - **Servo power is a hardware problem, not a software one:** early jitter and
   instability came from power draw, which I solved with a dedicated supply,
   MOSFET switching and decoupling capacitors.
