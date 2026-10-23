@@ -1,0 +1,64 @@
+services:
+  servo:
+    build: ./servo
+    container_name: servo
+    devices:
+      - /dev/i2c-1:/dev/i2c-1
+    privileged: true
+    ports:
+      - "8081"
+    restart: unless-stopped
+    networks:
+      - app_net
+
+  webcam:
+    build: ./webcam
+    container_name: webcam
+    devices:
+      - /dev/video1:/dev/video1   # map the camera from host
+    ports:
+      - "8082"
+    restart: unless-stopped
+    networks:
+      - app_net
+
+  webpage:
+    build: ./webpage
+    container_name: webpage
+    ports:
+      - "8080"
+    restart: unless-stopped
+    depends_on:
+      - servo
+      - webcam
+    networks:
+      - app_net
+
+  proxy:
+    build: ./proxy
+    container_name: proxy
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - webpage
+      - servo
+      - webcam
+    networks:
+      - app_net
+
+  cloudflared:
+    build: ./cloudflared
+    container_name: cloudflared
+    restart: always
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARED_TOKEN}
+    depends_on:
+      - proxy
+    networks:
+      - app_net
+
+networks:
+  app_net:
+    driver: bridge

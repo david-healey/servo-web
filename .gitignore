@@ -1,0 +1,11 @@
+# secrets
+.env
+*.pem
+*.key
+*.crt
+cloudflared/*.json
+
+# OS / editor junk
+.DS_Store
+__pycache__/
+*.pyc

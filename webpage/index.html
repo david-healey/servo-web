@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mission Control</title>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --text-color: #fff;
+      --card-bg: #1e1e1e;
+      --subcard-bg: #242424;
+      --button-bg: #2b2b2b;
+      --button-active: #444;
+      --accent: #007bff;
+    }
+
+    body.light {
+      --bg-color: #f8f9fa;
+      --text-color: #000;
+      --card-bg: #ffffff;
+      --subcard-bg: #f0f0f0;
+      --button-bg: #e6e6e6;
+      --button-active: #d0d0d0;
+      --accent: #0066cc;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 2rem;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    h1 {
+      margin-bottom: 1.5rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      cursor: pointer;
+      background: var(--button-bg);
+      color: var(--text-color);
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+    }
+
+    .theme-toggle:hover {
+      background-color: var(--button-active);
+    }
+
+    .servo-card {
+      width: 100%;
+      background-color: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+      transition: background-color 0.3s;
+    }
+
+    .servo-card h2 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    .subcards {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .subcard {
+      background-color: var(--subcard-bg);
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s;
+    }
+
+    .subcard h3 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+
+    button {
+      background-color: var(--button-bg);
+      color: var(--text-color);
+      border: none;
+      padding: 0.6rem 1.2rem;
+      margin: 0.4rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.15s, transform 0.15s;
+    }
+
+    button:active {
+      background-color: var(--button-active);
+      transform: scale(0.97);
+    }
+
+    .webcam {
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    }
+
+    .webcam img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()">☀️ / 🌙</button>
+  <div class="container">
+    <div class="servo-card">
+      <div class="subcards">
+        <!-- Subcard for each servo -->
+        <div class="subcard" data-name="printer">
+          <h3>Printer Door</h3>
+          <button onclick="sendCommand('printer', 'open')">Open</button>
+          <button onclick="sendCommand('printer', 'home')">Home</button>
+        </div>
+        <!-- Future subcards go here -->
+      </div>
+    </div>
+
+    <div class="webcam">
+      <img src="/webcam/?action=stream" alt="Webcam Feed">
+    </div>
+  </div>
+
+  <script>
+    // Auto-detect system theme
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    if (!prefersDark.matches) document.body.classList.add('light');
+
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+    }
+
+    async function sendCommand(name, action) {
+      const btns = document.querySelectorAll(`.subcard[data-name="${name}"] button`);
+      btns.forEach(btn => btn.disabled = true);
+      try {
+        await fetch(`/servo/${name}/${action}`, { method: "POST" });
+      } catch (err) {
+        console.error("Command failed:", err);
+      } finally {
+        setTimeout(() => btns.forEach(btn => btn.disabled = false), 500);
+      }
+    }
+  </script>
+</body>
+</html>
